@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URL Shortener API</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>URL Shortener</h1>
+      <p>Enter a URL to shorten it! (Your URL MUST start with <em>https://</em>  to be valid) </p>
+      
+    </header>
+
+    <div class="form-container">
+      <form id="url-form">
+        <input type="url" id="original-url" placeholder="https://" required>
+        <button type="submit">Shorten URL</button>
+      </form>
+
+      <div id="result" class="result-container" style="display:none;">
+        <p><strong>Original URL:</strong> <span id="original-url-display"></span></p>
+        <p><strong>Short URL:</strong> <a id="short-url-link" target="_blank"></a></p>
+      </div>
+      
+      <div id="error-message" class="error-message" style="display:none;"></div>
+    </div>
+   
+  </div>
+ 
+  <script>
+    const form = document.getElementById('url-form');
+    const originalUrlInput = document.getElementById('original-url');
+    const resultContainer = document.getElementById('result');
+    const errorMessage = document.getElementById('error-message');
+    const originalUrlDisplay = document.getElementById('original-url-display');
+    const shortUrlLink = document.getElementById('short-url-link');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const originalUrl = originalUrlInput.value;
+
+      try {
+        const response = await fetch('/api/shorturl', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ original_url: originalUrl })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          errorMessage.style.display = 'block';
+          errorMessage.textContent = data.error;
+          resultContainer.style.display = 'none';
+        } else {
+          resultContainer.style.display = 'block';
+          errorMessage.style.display = 'none';
+          originalUrlDisplay.textContent = data.original_url;
+          shortUrlLink.href = `/api/shorturl/${data.short_url}`;
+          shortUrlLink.textContent = `/api/shorturl/${data.short_url}`;
+        }
+      } catch (error) {
+        errorMessage.style.display = 'block';
+        errorMessage.textContent = 'An error occurred. Please try again.';
+        resultContainer.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
